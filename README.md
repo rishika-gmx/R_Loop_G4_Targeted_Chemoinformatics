@@ -91,6 +91,5 @@ This pipeline design and structural code base are strictly guided by these prima
 └── prepared_ligands_pdbqt/    # Output directory for processed docking assets (.pdbqt)
 ```
 
-## 📜 How to Cite or Reference
+## How to Cite or Reference
 Pandey, R. (2026). *High-Throughput Virtual Screening of G-Quadruplex Stabilizers to Modulate R-Loop Genomic Instability.*
-* 
