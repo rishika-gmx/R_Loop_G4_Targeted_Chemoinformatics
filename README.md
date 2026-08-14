@@ -1,95 +1,431 @@
-# High-Throughput Virtual Screening of G-Quadruplex Stabilizers to Modulate R-Loop Genomic Instability
 
-**Academic Track Focus:** Chemoinformatics, Epitranscriptomics, non-canonical DNA Mechanics & Cancer Systems Biology  
-**Execution Environment:** Local WSL2 Ubuntu Linux Architecture  
-**Scope:** Functional Undergraduate Research Pipeline & Design  
+# Virtual Screening of G-Quadruplex Stabilizers to Explore R-Loop-Associated Genomic Instability
+
+**Academic Track Focus:** Chemoinformatics · Epitranscriptomics · Non-Canonical DNA Mechanics · Cancer Systems Biology  
+**Execution Environment:** Local WSL2 Ubuntu Architecture  
+**Scope:** Undergraduate Computational Research / CADD Exercise
 
 ---
 
-## 📌 1. Comprehensive Biological Foundation
+## 1. Biological Foundation
 
-### 🧬 What is an R-Loop?
-During cellular transcription, RNA Polymerase II unwinds double-stranded DNA (dsDNA) to synthesize a nascent single-stranded messenger RNA (mRNA). Typically, this mRNA transcript immediately peels away from the template strand. 
+### What is an R-Loop?
 
-However, in specific G-rich genomic regions, **the newly generated single-stranded RNA invades the DNA duplex behind the transcription machinery, re-hybridizing directly with the complementary DNA template strand**. This event locks open a specialized, three-stranded nucleic acid bubble known as an **R-loop**:
-*   **The Hybrid Core:** A highly stable, rigid **RNA:DNA hybrid matrix** (2 strands).
-*   **The Displaced Strand:** A single strand of **non-template genomic DNA** that loops outward into the nuclear environment (1 strand).
+During cellular transcription, **RNA Polymerase II** unwinds a region of double-stranded DNA (dsDNA) to synthesize a nascent RNA transcript. Under normal conditions, the newly synthesized RNA separates from the DNA template as transcription proceeds.
+
+However, in certain genomic regions, particularly those containing **G-rich sequences**, the newly synthesized RNA can rehybridize with the complementary DNA template strand behind the transcription machinery.
+
+This creates a stable **three-stranded nucleic-acid structure known as an R-loop**.
+
+An R-loop consists of:
+
+| Component | Description |
+|---|---|
+| **RNA:DNA Hybrid** | The newly synthesized RNA remains hybridized to the complementary DNA template strand. |
+| **Displaced DNA Strand** | The non-template DNA strand is displaced from the duplex and remains single-stranded. |
+| **R-Loop Structure** | Together, these components form a three-stranded nucleic-acid structure. |
+
+The basic structure can be represented as:
 
 ```text
                   [Displaced G-Rich Single-Strand DNA]
                 /--------------------------------------\
 === DNA (Top)                                           \=== DNA (Top)
-=== DNA (Bottom) ======== RNA (Hybrid Core) ================= DNA (Bottom)
+=== DNA (Bottom) ======== RNA:DNA Hybrid ================= DNA (Bottom)
+````
+
+R-loops are not inherently pathological and can occur as part of normal cellular processes. However, **persistent or improperly resolved R-loops can interfere with DNA replication and transcription and contribute to genomic instability**.
+
+---
+
+### G-Quadruplex Formation within G-Rich Regions
+
+The displaced DNA strand of an R-loop can contain **guanine-rich sequences**. These single-stranded G-rich regions have the ability to fold into a specialized non-canonical DNA structure known as a **G-quadruplex (G4)**.
+
+A G-quadruplex is formed when four guanine bases associate into a planar structure called a **G-quartet**.
+
+The guanines interact through **Hoogsteen hydrogen bonding**, while monovalent cations such as **K⁺** or **Na⁺** can coordinate within the central channel of the structure.
+
+Multiple G-quartets can then stack on top of one another:
+
+```text
+              G-Quartet
+        ┌─────────────────┐
+        │ G       G       │
+        │      K⁺         │
+        │ G       G       │
+        └─────────────────┘
+                │
+                ▼
+              G-Quartet
+        ┌─────────────────┐
+        │ G       G       │
+        │      K⁺         │
+        │ G       G       │
+        └─────────────────┘
+                │
+                ▼
+              G-Quartet
 ```
 
-### 🕸️ The G-Quadruplex (G4) Intersection
-Because the displaced single strand of DNA is highly asymmetric and rich in Guanine (G) bases, it possesses extreme structural flexibility. To minimize thermodynamic tension, these matching G-bases instantly undergo self-assembly via a specialized hydrogen bonding network known as **Hoogsteen G-quartet square rings**. 
-
-Four Guanines align planarly around a central coordinating alkali metal monovalent cation (K⁺ or \(Na^+\.)). These planar squares stack vertically on top of one another like a molecular skyscraper, forming a tight structural knot known as a **G-quadruplex (G4)**. 
-
-*   **The Molecular Trap:** Once a G4 structure folds onto the displaced DNA strand, it acts as a structural anchor that mechanically prevents the RNA:DNA hybrid from unzipping.
-*   **The Synthetic Lethality Oncology Strategy:** Normal cells clear R-loops rapidly using endogenous enzymes like RNase H1 to avoid mutations. However, homologous recombination-deficient cancer cells (e.g., BRCA1/2 mutations) cannot handle additional DNA repair stress. By introducing small-molecule CADD drugs that bind and stabilize these G4 knots, we can artificially freeze R-loops open. This overloads the cancer cell with catastrophic **transcription-replication conflicts (TRCs)** and double-strand breaks (DSBs), driving selective tumor apoptosis.
+The resulting G-quadruplex can be highly stable and can influence the structural environment of the DNA region in which it forms.
 
 ---
 
-## 💻 2. The Computational Working Model (Physics Engine Mechanics)
+## 2. R-Loop / G-Quadruplex Intersection
 
-To screen for effective G4-stabilizing drugs, this pipeline evaluates the molecular binding thermodynamics between small molecules and non-canonical nucleic acids using the **AutoDock Vina scoring engine physics parameters**:
+The relationship between R-loops and G-quadruplexes provides the biological basis for this computational project.
 
-### 📐 A. Cartesian Search Grid Coordinates
-Unlike traditional protein docking which targets deep amino acid pockets, G4 structures present wide, flat, exposed aromatic surfaces. The computational grid search space box in `g4_library_prep.py` is centered over the terminal G-quartet layer of the **c-MYC oncogene promoter region** using these Cartesian anchors:
-*   **Center Coordinates:** X = 14.85, Y = 2.30, Z = -11.40
-*   **Grid Dimensions:** 22Å × 22Å × 22Å (Creates a cube that completely covers the planar terminal bases, flanking loops, and deep groove tracks).
+When a G-quadruplex forms on the **displaced G-rich DNA strand**, it can alter the structural properties of the R-loop region.
 
-### 🔬 B. Scoring Function Force Field Equations
-AutoDock Vina evaluates the binding affinity score (Δ G, expressed in kcal/mol) by calculating the sum of inter-atomic distances and spatial forces between the small molecule ligand (L) and the DNA receptor (R):
+This creates an important connection between:
 
-\[\Delta G_{\text{binding}} = W_{\text{vdw}} \sum \text{gauss}(d_{RL}) + W_{\text{rep}} \sum \text{repulsion}(d_{RL}) + W_{\text{hbond}} \sum \text{hbond}(d_{RL}) + W_{\text{rot}} N_{\text{rot}}\]
+**G-rich DNA → G-quadruplex formation → R-loop structure → transcription-associated genomic instability**
 
-1.  **\(\text{gauss}(d_{RL})\) (Attractive Dispersion/Van der Waals):** Measures the favorable surface contact score when flat aromatic small molecules sit directly on top of the flat DNA nucleotide bases.
-2.  **\(\text{repulsion}(d_{RL})\) (Steric Clashes):** Penalizes scores heavily if small-molecule atoms mathematically overlap or crowd the physical boundaries of the DNA backbone phosphate rings.
-3.  **\(\text{hbond}(d_{RL})\) (Electrostatic Hydrogen Bonding):** Tracks structural binding stability when ligand functional groups form direct hydrogen bonds with the exposed edges of Guanine, Adenine, or Thymine loops.
-4.  **\(N_{\text{rot}}\) (Torsional Entropy Penalty):** Penalizes flexible chemical ligands that have too many rotating rotatable single bonds. This prioritizes rigid, flat molecules (like porphyrins) that fit perfectly onto G4 layers without losing structural energy.
+G4 structures have been studied in genomic regions associated with transcription, replication, and oncogene regulation.
+
+The **c-MYC promoter** is one well-characterized example of a genomic region capable of forming a G-quadruplex.
 
 ---
 
-## 📊 3. Baseline Structural Data & Reference Matrix
+## 3. Computational Rationale
 
-### 🧬 Structural Targets (The Input Assets)
-1.  **Macromolecular Receptor (PDB ID: `1XAV`):** The high-resolution solution Nuclear Magnetic Resonance (NMR) structure representing the parallel-stranded G-quadruplex folded within the human *c-MYC* oncogene promoter. This oncogene is heavily overexpressed across aggressive human liquid and solid tumors.
-2.  **Ligand Library Compounds:**
-    *   `resveratrol.sdf`: A plant-derived polycyclic polyphenol framework used to evaluate if non-toxic natural scaffolds can effectively block target zones.
-    *   `curcumin.sdf`: A naturally occurring symmetric crystalline dicarbonyl molecule known to display trace affinity markers across planar nucleotide steps.
-    *   `quercetin.sdf`: A highly hydroxylated polyphenolic structure mapping robust hydrogen-bond binding tendencies.
+The objective of this project is to explore whether small molecules with suitable structural characteristics could potentially interact with a G-quadruplex target.
 
-### 🎯 Calculated Lead Output Screening Matrix
-The data below details the binding scores generated when running our virtual screening parameters against the c-MYC target pocket:
+The computational workflow therefore uses a basic **Computer-Aided Drug Design (CADD)** approach.
 
-| Compound ID | Structural Scaffold / Chemical Family | Binding Affinity (kcal/mol) | Intercalating π-π Stacking Status | Interfacing Receptor Anchors |
-| :--- | :--- | :--- | :--- | :--- |
-| **G4-LNK-01** | Phenanthroline Derivative | **-9.4** | Dual Tetrad Stack | Gua7, Gua12, Ade3 |
-| **G4-LNK-02** | Macrocyclic Porphyrin | **-8.8** | Planar Overlay | Gua1, Gua6, Thy18 |
-| **G4-LNK-03** | Flavonoid Polycycle | **-7.9** | Lateral Groove Binder | Arg45 (Loops), Gua2 |
+The workflow consists of:
+
+```text
+Small-Molecule Structures
+          │
+          ▼
+     SDF Structures
+          │
+          ▼
+   Ligand Preparation
+          │
+          ├── 3D Structure Generation
+          ├── Geometry Preparation
+          ├── Protonation / H Handling
+          └── Partial Charge Assignment
+          │
+          ▼
+     PDBQT Structures
+          │
+          ▼
+   Potential Docking Input
+```
+
+The current repository focuses specifically on the **ligand-preparation stage** of this workflow.
 
 ---
 
-## 📜 4. Peer-Reviewed Academic Literature Sources
+## 4. Computational Working Model
+
+The selected G-quadruplex structure provides a non-canonical nucleic-acid target for exploring structure-based molecular interactions.
+
+Unlike conventional protein targets, G-quadruplexes contain **planar guanine tetrads, grooves, loops, and exposed aromatic surfaces** that can provide potential interaction sites for small molecules.
+
+Potential ligand interactions can include:
+
+| Interaction                    | Description                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| **π–π stacking**               | Aromatic ligand systems may interact with exposed nucleobase surfaces.      |
+| **Hydrogen bonding**           | Functional groups on ligands may interact with nucleobases or loop regions. |
+| **Electrostatic interactions** | Charged or polar groups can contribute to ligand–DNA interactions.          |
+| **Groove interactions**        | Ligands may occupy grooves or loop-associated regions of the G4 structure.  |
+| **Van der Waals interactions** | Close molecular contact can contribute to predicted binding affinity.       |
+
+These interactions are the basis for computationally evaluating how small molecules may interact with non-canonical DNA structures.
+
+> **Important:** Molecular docking or ligand preparation alone cannot demonstrate that a compound stabilizes a G-quadruplex, increases R-loop persistence, causes DNA damage, or produces anticancer effects. Those biological conclusions require experimental validation.
+
+---
+
+# 5. Structural Target
+
+### Human *c-MYC* Promoter G-Quadruplex
+
+The selected receptor is the **G-quadruplex structure formed within the human *c-MYC* promoter**.
+
+| Parameter          | Value                                      |
+| ------------------ | ------------------------------------------ |
+| **Target**         | Human *c-MYC* promoter G-quadruplex        |
+| **PDB ID**         | `1XAV`                                     |
+| **Structure Type** | NMR                                        |
+| **Target Class**   | Non-canonical DNA                          |
+| **Application**    | Structure-based CADD / docking exploration |
+
+The `1XAV` structure provides a structurally defined G-quadruplex target for investigating potential interactions with small molecules.
+
+---
+
+# 6. Selected Ligand Library
+
+Three small molecules were selected for the initial computational workflow:
+
+| Compound        | Chemical Class             | General Structural Feature                                        |
+| --------------- | -------------------------- | ----------------------------------------------------------------- |
+| **Resveratrol** | Stilbene polyphenol        | Aromatic conjugated scaffold with hydroxyl groups                 |
+| **Curcumin**    | Diarylheptanoid polyphenol | Extended conjugated system with multiple oxygen-containing groups |
+| **Quercetin**   | Flavonol                   | Polycyclic flavonoid scaffold with multiple hydroxyl groups       |
+
+These compounds were selected as **representative small-molecule scaffolds** for exploring ligand preparation and potential interactions with G-quadruplex DNA.
+
+The current library is intentionally small and serves as a **proof-of-concept computational exercise rather than a large-scale drug-screening campaign**.
+
+---
+
+# 7. Ligand Preparation Workflow
+
+The main computational script in this repository is:
+
+```text
+g4_library_prep.py
+```
+
+The script uses **Python 3** to automate Open Babel command-line operations within a **WSL2 Ubuntu environment**.
+
+The preparation workflow is:
+
+```text
+Raw SDF Structures
+        │
+        ▼
+  Library Discovery
+        │
+        ▼
+  3D Structure Generation
+        │
+        ▼
+ Geometry Preparation
+        │
+        ▼
+Protonation / H Handling
+        │
+        ▼
+ Gasteiger Charges
+        │
+        ▼
+   PDBQT Conversion
+        │
+        ▼
+Prepared Ligand Library
+```
+
+---
+
+## 7.1 Automated Library Discovery
+
+Instead of manually specifying every compound in the Python script, the workflow automatically searches the input directory for `.sdf` files.
+
+For example:
+
+```text
+raw_compounds/
+├── resveratrol.sdf
+├── curcumin.sdf
+└── quercetin.sdf
+```
+
+Additional `.sdf` files can be added to the directory without modifying the main Python script.
+
+---
+
+## 7.2 3D Structure Generation
+
+Open Babel is used to generate three-dimensional molecular coordinates from the input structures.
+
+The workflow uses:
+
+```text
+--gen3d
+```
+
+to generate the initial 3D representation required for subsequent docking preparation.
+
+---
+
+## 7.3 Protonation and Hydrogen Handling
+
+The preparation workflow applies protonation/hydrogen handling using a specified pH.
+
+The current default is:
+
+```text
+pH = 7.0
+```
+
+Protonation state can influence molecular interactions, particularly for compounds containing ionizable functional groups.
+
+---
+
+## 7.4 Partial Charge Assignment
+
+The workflow assigns **Gasteiger partial charges** to the prepared ligand structures.
+
+These charges provide the electrostatic information required by AutoDock-compatible PDBQT structures.
+
+---
+
+## 7.5 PDBQT Conversion
+
+The final structures are converted from SDF format into:
+
+```text
+.pdbqt
+```
+
+PDBQT structures contain information including:
+
+* Atomic coordinates
+* Partial charges
+* AutoDock atom types
+* Rotatable-bond information
+
+These files can subsequently be used as ligand inputs for AutoDock-compatible molecular docking workflows.
+
+---
+
+# 8. Repository Structure
+
+```text
+R_Loop_G4_Targeted_Chemoinformatics/
+│
+├── README.md
+├── g4_library_prep.py
+│
+├── raw_compounds/
+│   ├── resveratrol.sdf
+│   ├── curcumin.sdf
+│   └── quercetin.sdf
+│
+└── prepared_ligands_pdbqt/
+    ├── resveratrol.pdbqt
+    ├── curcumin.pdbqt
+    └── quercetin.pdbqt
+```
+
+---
+
+# 9. Execution Environment
+
+The workflow was designed for a local **WSL2 Ubuntu environment**.
+
+### Software Used
+
+| Software / Tool   | Purpose                                        |
+| ----------------- | ---------------------------------------------- |
+| **Python 3**      | Pipeline automation                            |
+| **Open Babel**    | Molecular structure conversion and preparation |
+| **WSL2 Ubuntu**   | Linux-based execution environment              |
+| **AutoDock Vina** | Planned downstream docking environment         |
+
+---
+
+# 10. Running the Pipeline
+
+## Requirements
+
+Verify Python and Open Babel:
+
+```bash
+python3 --version
+obabel -V
+```
+
+---
+
+## Default Execution
+
+From the repository directory:
+
+```bash
+python3 g4_library_prep.py
+```
+
+The script searches:
+
+```text
+raw_compounds/
+```
+
+and writes prepared ligand structures to:
+
+```text
+prepared_ligands_pdbqt/
+```
+
+---
+
+# 11. AutoDock Vina Search Parameters
+
+The project also documents an example docking search region selected for the `1XAV` G-quadruplex structure.
+
+| Parameter          |      Value |
+| ------------------ | ---------: |
+| **Receptor**       |     `1XAV` |
+| **Center X**       |  `14.85 Å` |
+| **Center Y**       |   `2.30 Å` |
+| **Center Z**       | `-11.40 Å` |
+| **Size X**         |     `22 Å` |
+| **Size Y**         |     `22 Å` |
+| **Size Z**         |     `22 Å` |
+| **Exhaustiveness** |       `32` |
+
+The search region was selected to encompass the targeted G-quadruplex surface and surrounding structural features relevant to potential ligand interactions.
+
+These parameters document the **planned CADD/docking configuration** associated with the project.
+
+---
+
+# 12. Current Output
+
+The current ligand-preparation stage generates:
+
+```text
+prepared_ligands_pdbqt/
+├── resveratrol.pdbqt
+├── curcumin.pdbqt
+└── quercetin.pdbqt
+```
+
+The resulting PDBQT structures represent the prepared ligand inputs for a potential AutoDock Vina docking workflow.
+
+The repository does **not** currently claim experimentally validated binding affinities or biological activity for these compounds.
+
+---
+
+# 13. Scope and Limitations
+
+This project is intentionally focused on **exploring a computational workflow for G-quadruplex-targeted ligand preparation**.
+
+The workflow does not establish:
+
+* Experimental G-quadruplex stabilization
+* R-loop formation or persistence
+* Transcription-replication conflicts
+* DNA damage
+* Cancer-cell selectivity
+* Experimental binding affinity
+* Anticancer activity
+
+Computational docking, when used, provides **predicted molecular interactions and relative scoring estimates**, rather than experimental measurements.
+
+Additional biochemical, biophysical, and cellular experiments would be required to establish the proposed biological mechanism.
+
+---
+
+## 14. Peer-Reviewed Academic Literature Sources / References
 
 This pipeline design and structural code base are strictly guided by these primary peer-reviewed scientific citations:
 
 1.  **The G4-R Loop Link:** *G-quadruplexes associated with R-loops promote CTCF binding* (Cell Press: Molecular Cell, 2023). This study proved that R-loops co-localize directly with G-quadruplex structures across oncogenic genomic tracks, changing localized chromatin architecture.
 2.  **The CADD Screening Protocol:** *G-quadruplex Virtual Drug Screening: A Review* (Molecules / PMC, 2018). This methodology standard provides the exact mathematical guidelines used to center grid box structures and establish exhaustiveness parameters for non-canonical DNA docking campaigns.
 3.  **The Structural Mapping Baseline:** *Major G-quadruplex structure formed in the human c-MYC promoter...* (Biochemistry, 2004). The foundational structural paper that originally resolved the 3D NMR coordinate landscape of the `1XAV` asset, validating its loop matrices as elite targets for drug design.
-
 ---
 
-## 📁 5. Repository Structure
-```text
-├── g4_library_prep.py         # Functional Python batch script for small molecule optimization
-├── README.md                  # Comprehensive R-loop/G4 docking documentation
-├── raw_compounds/             # Folder containing raw downloaded ligand files (.sdf)
-└── prepared_ligands_pdbqt/    # Output directory for processed docking assets (.pdbqt)
-```
+## 15. How to Cite or Reference
+Pandey, R. (2026). *Virtual Screening of G-Quadruplex Stabilizers to Explore R-Loop-Associated Genomic Instability.*
 
-## How to Cite or Reference
-Pandey, R. (2026). *High-Throughput Virtual Screening of G-Quadruplex Stabilizers to Modulate R-Loop Genomic Instability.*
